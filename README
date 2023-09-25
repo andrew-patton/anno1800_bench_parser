@@ -1,5 +1,5 @@
 Hello, it's been awhile since I've played Anno 1800 and I've noticed the benchmark CSV files are... hard to read. 
 
-So I was bored and decided to roll my face on the keyboard w/the help of chatGPT to create this parser to make the results more legible and the ability to easily import into google docs for further analysis.
+So I was bored and decided to roll my face on the keyboard to create this parser to make the results more legible and the ability to easily import into google docs for further analysis.
 
 Full source code, and some samples benchmark data & outputs are included. The exe can be found within the releases. The app will prompt for a benchmark result, and then output a new CSV file that is readable.
