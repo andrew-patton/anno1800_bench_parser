@@ -1,0 +1,33 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+    // id 'com.gradle.build-scan' version "3.15.1" // Use the latest available version
+    // id "com.linkedin.python" version "0.8.4"
+}
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+    tag 'support-engineer' // As per the JD: https://boards.greenhouse.io/gradle/jobs/4320097
+    // Optionally, you can set a server if you have a Gradle Enterprise server
+    // server = 'https://your-gradle-enterprise-server.com'
+}
+
+//python {
+    // Define the Python version to use
+    //pythonVersion = "3.8"
+//}
+
+dependencies {
+    // Define the dependencies (the equivalent of what would be in requirements.txt)
+    //python 'pandas:pandas:1.2.3'
+    //python 'bokeh:bokeh:2.3.1'
+    // Add any additional dependencies here
+}
+
+task runPythonScript(type: Exec) {
+    workingDir 'C:/Users/omgim/Documents/anno benchmark backups'
+    commandLine 'python', 'statscharts_multirunv2.py', 'C:/path/to/input.csv', '--rows_to_skip', '20'
+}
+
+
+// If you need to include any other tasks, define them here

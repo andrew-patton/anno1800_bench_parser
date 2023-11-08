@@ -1,13 +1,10 @@
+import argparse
 import csv
-import tkinter as tk
-from tkinter import filedialog
-from tkinter import messagebox
 import pandas as pd
 from bokeh.plotting import figure, output_file, show, curdoc
 from bokeh.layouts import column as plot_column
 from bokeh.models import Legend, CheckboxGroup, CustomJS
 from bokeh.palettes import Category10
-import numpy as np
 import os
 
 # Function to remove null characters and special characters from a string
@@ -20,7 +17,7 @@ def clean_string(input_string):
 def csv_to_csv(csv_file_path):
     try:
         # Determine the output CSV file path based on the input CSV file
-        output_csv_file = csv_file_path.replace(".csv", "_output.csv")
+        output_csv_file = csv_file_path.replace(".csv", "_cleaned.csv")
 
         # Open the input CSV file for reading and the output CSV file for writing
         with open(csv_file_path, 'r', newline='', encoding='utf-8') as infile, \
@@ -33,22 +30,15 @@ def csv_to_csv(csv_file_path):
             # Iterate through rows in the input CSV, clean the data, and write to the output CSV
             for row in csv_reader:
                 cleaned_row = [clean_string(cell) for cell in row]
-                cleaned_row = [row for row in cleaned_row if any(item.strip() for item in row)]
-                cleaned_row = [''.join([item for item in row if isinstance(item, str)]) for row in cleaned_row]
                 csv_writer.writerow(cleaned_row)
 
         print(f"CSV data from '{csv_file_path}' has been cleaned and saved to '{output_csv_file}'")
-
-        # Open the folder containing the output CSV file (with double quotes around the path)
-        output_folder = os.path.dirname(output_csv_file)
-        os.system(f'start "" "{output_folder}"')
-
-        # Show a "Done" message pop-up
-        messagebox.showinfo("Done", "CSV data has been cleaned and saved.")
+        
+        return output_csv_file
 
     except Exception as e:
-        # Show an error message pop-up
-        messagebox.showerror("Error", f"An error occurred: {str(e)}")
+        print(f"An error occurred: {str(e)}")
+        return None
 
 # Function to create the Bokeh plot
 def create_bokeh_plot(df_cleaned):
@@ -107,28 +97,29 @@ def create_bokeh_plot(df_cleaned):
     curdoc().add_root(layout)
     show(p)
 
-# Function to handle file selection and processing
-def select_file_and_process(rows_to_skip):
-    root = tk.Tk()
-    root.withdraw()  # Hide the main window
+# Initialize the parser
+parser = argparse.ArgumentParser(description="Clean and plot CSV data.")
+# Add arguments
+parser.add_argument('csv_file', type=str, help='The path to the CSV file to process')
+parser.add_argument('--rows_to_skip', type=int, default=20, help='The number of rows to skip')
 
-    file_path = filedialog.askopenfilename(
-        title="Select Input CSV File",
-        filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
-    )
+# Parse the arguments
+args = parser.parse_args()
 
-    if file_path:
-        if file_path.endswith(".csv"):
-            # Clean and process the selected CSV file
-            csv_to_csv(file_path)
+if __name__ == "__main__":
+    # Use the provided arguments to process the CSV file
+    if args.csv_file.endswith(".csv"):
+        # Clean and process the CSV file
+        output_csv_file = csv_to_csv(args.csv_file)
 
+        if output_csv_file:
             # Load the cleaned CSV data into a DataFrame
-            df_cleaned = pd.read_csv(file_path.replace(".csv", "_output.csv"), delimiter=';', skiprows=range(rows_to_skip))
+            df_cleaned = pd.read_csv(output_csv_file, delimiter=';', skiprows=range(args.rows_to_skip))
 
             # Create and display the Bokeh plot
             create_bokeh_plot(df_cleaned)
-        else:
-            print("Error: Selected file must have a .csv extension.")
+    else:
+        print("Error: The provided file path must have a .csv extension.")
 
 if __name__ == "__main__":
     # Specify the number of rows to skip (including header rows)

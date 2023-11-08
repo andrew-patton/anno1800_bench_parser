@@ -1,4 +1,3 @@
-import csv
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
@@ -10,45 +9,18 @@ from bokeh.palettes import Category10
 import numpy as np
 import os
 
-# Function to remove null characters and special characters from a string
+# Function to clean a string
 def clean_string(input_string):
     cleaned_string = input_string.replace('\0', '')
     cleaned_string = cleaned_string.replace(']', '')
     return cleaned_string
 
-# Function to convert CSV to CSV with cleaned data
-def csv_to_csv(csv_file_path):
-    try:
-        # Determine the output CSV file path based on the input CSV file
-        output_csv_file = csv_file_path.replace(".csv", "_output.csv")
-
-        # Open the input CSV file for reading and the output CSV file for writing
-        with open(csv_file_path, 'r', newline='', encoding='utf-8') as infile, \
-             open(output_csv_file, 'w', newline='', encoding='utf-8') as outfile:
-
-            # Create CSV reader and writer objects with semicolon as the delimiter
-            csv_reader = csv.reader(infile, delimiter=';')
-            csv_writer = csv.writer(outfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-
-            # Iterate through rows in the input CSV, clean the data, and write to the output CSV
-            for row in csv_reader:
-                cleaned_row = [clean_string(cell) for cell in row]
-                cleaned_row = [row for row in cleaned_row if any(item.strip() for item in row)]
-                cleaned_row = [''.join([item for item in row if isinstance(item, str)]) for row in cleaned_row]
-                csv_writer.writerow(cleaned_row)
-
-        print(f"CSV data from '{csv_file_path}' has been cleaned and saved to '{output_csv_file}'")
-
-        # Open the folder containing the output CSV file (with double quotes around the path)
-        output_folder = os.path.dirname(output_csv_file)
-        os.system(f'start "" "{output_folder}"')
-
-        # Show a "Done" message pop-up
-        messagebox.showinfo("Done", "CSV data has been cleaned and saved.")
-
-    except Exception as e:
-        # Show an error message pop-up
-        messagebox.showerror("Error", f"An error occurred: {str(e)}")
+# Function to clean a DataFrame
+def clean_dataframe(df):
+    cleaned_df = df.applymap(clean_string)
+    cleaned_df = cleaned_df.dropna(how='all')  # Remove rows with all NaN values
+    cleaned_df = cleaned_df.dropna(axis=1, how='all')  # Remove columns with all NaN values
+    return cleaned_df
 
 # Function to create the Bokeh plot
 def create_bokeh_plot(df_cleaned):
@@ -108,7 +80,7 @@ def create_bokeh_plot(df_cleaned):
     show(p)
 
 # Function to handle file selection and processing
-def select_file_and_process(rows_to_skip):
+def select_file_and_process():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
 
@@ -119,11 +91,21 @@ def select_file_and_process(rows_to_skip):
 
     if file_path:
         if file_path.endswith(".csv"):
-            # Clean and process the selected CSV file
-            csv_to_csv(file_path)
+            # Read the CSV file into a DataFrame
+            df = pd.read_csv(file_path, delimiter=';')
 
-            # Load the cleaned CSV data into a DataFrame
-            df_cleaned = pd.read_csv(file_path.replace(".csv", "_output.csv"), delimiter=';', skiprows=range(rows_to_skip))
+            # Clean the DataFrame
+            df_cleaned = clean_dataframe(df)
+
+            # Save the cleaned data to a new CSV file
+            output_csv_file = file_path.replace(".csv", "_output.csv")
+            df_cleaned.to_csv(output_csv_file, sep=';', index=False)
+
+            print(f"CSV data from '{file_path}' has been cleaned and saved to '{output_csv_file}'")
+
+            # Open the folder containing the output CSV file (with double quotes around the path)
+            output_folder = os.path.dirname(output_csv_file)
+            os.system(f'start "" "{output_folder}"')
 
             # Create and display the Bokeh plot
             create_bokeh_plot(df_cleaned)
@@ -131,6 +113,4 @@ def select_file_and_process(rows_to_skip):
             print("Error: Selected file must have a .csv extension.")
 
 if __name__ == "__main__":
-    # Specify the number of rows to skip (including header rows)
-    rows_to_skip = 20  # Skip the first 20 rows (including header rows)
-    select_file_and_process(rows_to_skip)
+    select_file_and_process()
