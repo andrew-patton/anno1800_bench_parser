@@ -53,7 +53,7 @@ def csv_to_csv(csv_file_path):
 # Function to create the Bokeh plot
 def create_bokeh_plot(df_cleaned):
     # Create a Bokeh plot
-    p = figure(title="FrameTime and PresentTime (ms) Over Frames and Multiple Runs", x_axis_label="Time (ms)", y_axis_label="FrameTime", width=1000, height=500)
+    p = figure(title="FrameTime and PresentTime (ms) Over Frames and Multiple Runs", x_axis_label="Frame", y_axis_label="Time (ms)", width=1000, height=500)
 
     # Create a list of line renderers and labels for the legend
     renderers = []
